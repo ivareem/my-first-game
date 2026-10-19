@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A solo battle-for-a-square tic-tac-toe game.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231457bd'/%3E%3Ccircle cx='22' cy='28' r='8' fill='%23fff7e9'/%3E%3Ccircle cx='42' cy='28' r='8' fill='%23fff7e9'/%3E%3Cpath d='M20 45q12 8 24 0' fill='none' stroke='%23ff8426' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+  <title>Alien Tic-Tac-Toe</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --night: #071735;
+      --navy: #0b255c;
+      --blue: #1457bd;
+      --blue-bright: #4fa5ff;
+      --orange: #ff8426;
+      --orange-light: #ffbd69;
+      --cream: #fff7e9;
+      --white: #f7fbff;
+      --muted: #bdd4f2;
+      --danger: #ff6f70;
+      --success: #68e1b9;
+      --line: rgba(255, 255, 255, .17);
+      --shadow: 0 22px 55px rgba(0, 7, 30, .35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 15% 12%, rgba(79, 165, 255, .16) 0 2px, transparent 3px),
+        radial-gradient(circle at 83% 18%, rgba(255, 189, 105, .2) 0 2px, transparent 3px),
+        radial-gradient(circle at 76% 72%, rgba(79, 165, 255, .12) 0 1px, transparent 2px),
+        var(--night);
+      background-size: 170px 170px, 230px 230px, 110px 110px, auto;
+      color: var(--white);
+      font-family: ui-rounded, "Trebuchet MS", system-ui, sans-serif;
+      line-height: 1.5;
+    }
+
+    button { font: inherit; }
+    [hidden] { display: none !important; }
+
+    button:focus-visible,
+    dialog:focus-visible {
+      outline: 4px solid var(--orange-light);
+      outline-offset: 4px;
+    }
+
+    .shell {
+      width: min(1120px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 26px 0 44px;
+    }
+
+    .site-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 13px; }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border: 3px solid var(--orange);
+      border-radius: 16px 16px 20px 20px;
+      background: var(--blue);
+      color: var(--cream);
+      font-size: 1.5rem;
+      font-weight: 900;
+      transform: rotate(-3deg);
+    }
+
+    .brand p, .brand h1 { margin: 0; }
+    .brand p {
+      color: var(--orange-light);
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .brand h1 { font-size: clamp(1.25rem, 3vw, 1.8rem); line-height: 1.1; }
+
+    .header-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 9px; }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: rgba(11, 37, 92, .88);
+      box-shadow: var(--shadow);
+    }
+
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(260px, .9fr);
+      align-items: center;
+      min-height: 590px;
+      overflow: hidden;
+    }
+
+    .intro-copy { padding: clamp(28px, 6vw, 68px); }
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--orange-light);
+      font-size: .8rem;
+      font-weight: 900;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .intro h2 {
+      max-width: 620px;
+      margin: 0;
+      font-size: clamp(2.7rem, 8vw, 6.2rem);
+      line-height: .91;
+      letter-spacing: -.055em;
+    }
+    .intro h2 span { color: var(--orange); }
+    .lede { max-width: 610px; margin: 22px 0; color: var(--muted); font-size: 1.08rem; }
+
+    .counter-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 22px 0 28px;
+      padding: 0;
+      list-style: none;
+    }
+    .counter-list li {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(7, 23, 53, .58);
+      padding: 8px 12px;
+      color: var(--cream);
+      font-weight: 800;
+    }
+    .counter-list strong { color: var(--orange-light); }
+
+    .intro-art {
+      align-self: stretch;
+      display: grid;
+      place-items: center;
+      min-height: 390px;
+      background: var(--orange);
+      position: relative;
+      overflow: hidden;
+    }
+    .intro-art::before,
+    .intro-art::after {
+      content: "";
+      position: absolute;
+      border: 16px solid rgba(11, 37, 92, .15);
+      border-radius: 50%;
+    }
+    .intro-art::before { width: 410px; height: 410px; }
+    .intro-art::after { width: 285px; height: 285px; }
+
+    .btn {
+      border: 0;
+      border-radius: 14px;
+      min-height: 46px;
+      padding: 11px 18px;
+      cursor: pointer;
+      font-weight: 900;
+      transition: transform .16s ease, background .16s ease, opacity .16s ease;
+    }
+    .btn:hover:not(:disabled) { transform: translateY(-2px); }
+    .btn:active:not(:disabled) { transform: translateY(0); }
+    .btn:disabled { cursor: not-allowed; opacity: .48; }
+    .btn-primary { background: var(--orange); color: #261000; box-shadow: 0 7px 0 #b94b00; }
+    .btn-primary:active:not(:disabled) { box-shadow: 0 3px 0 #b94b00; }
+    .btn-secondary { border: 2px solid var(--blue-bright); background: transparent; color: var(--white); }
+    .btn-quiet { border: 1px solid var(--line); background: rgba(255,255,255,.07); color: var(--white); }
+    .btn-danger { border: 2px solid var(--danger); background: transparent; color: #ffdede; }
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: minmax(320px, .88fr) minmax(360px, 1.12fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .board-panel, .battle-panel { padding: clamp(20px, 3vw, 32px); }
+    .section-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
+    .section-top h2 { margin: 0; font-size: clamp(1.65rem, 4vw, 2.25rem); }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 11px;
+      background: rgba(7,23,53,.55);
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 800;
+    }
+    .status-pill::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--orange); }
+
+    .board-status { min-height: 3em; margin: 14px 0 18px; color: var(--muted); }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+      width: min(100%, 470px);
+      margin: 0 auto;
+      padding: 10px;
+      border: 4px solid var(--orange);
+      border-radius: 22px;
+      background: var(--orange);
+    }
+    .cell {
+      position: relative;
+      display: grid;
+      place-items: center;
+      aspect-ratio: 1;
+      min-width: 0;
+      border: 2px solid rgba(255,255,255,.25);
+      border-radius: 14px;
+      background: var(--blue);
+      color: var(--white);
+      cursor: pointer;
+      font-size: clamp(2.7rem, 10vw, 5.2rem);
+      font-weight: 1000;
+      line-height: 1;
+      text-shadow: 0 4px 0 rgba(0,0,0,.2);
+    }
+    .cell:not(:disabled):hover { background: #216bd1; }
+    .cell:disabled { cursor: not-allowed; }
+    .cell.empty:disabled { opacity: .58; }
+    .cell.mark-o { color: var(--orange-light); }
+    .cell.pending { outline: 5px solid var(--orange-light); outline-offset: -7px; }
+    .cell.pending::after {
+      content: "BATTLE";
+      position: absolute;
+      bottom: 9px;
+      border-radius: 999px;
+      background: var(--orange);
+      color: #2c1300;
+      padding: 3px 8px;
+      font-size: .62rem;
+      letter-spacing: .08em;
+    }
+    .cell.winning { background: #0c8a77; box-shadow: inset 0 0 0 4px var(--cream); }
+    .board-note { margin: 16px 0 0; color: var(--muted); font-size: .86rem; text-align: center; }
+
+    .battle-panel {
+      min-height: 610px;
+      position: relative;
+      overflow: hidden;
+    }
+    .battle-panel::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      bottom: -100px;
+      width: 260px;
+      height: 260px;
+      border: 36px solid rgba(255, 132, 38, .08);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .battle-content { position: relative; z-index: 1; }
+    .battle-copy h2 { margin: 4px 0 6px; font-size: clamp(1.8rem, 5vw, 2.7rem); line-height: 1.08; }
+    .battle-copy p { margin: 0; color: var(--muted); }
+
+    .alien-stage {
+      display: grid;
+      grid-template-columns: 190px 1fr;
+      gap: 22px;
+      align-items: center;
+      margin: 22px 0;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(7, 23, 53, .58);
+      padding: 18px;
+    }
+    .alien-wrap { display: grid; place-items: center; min-height: 190px; }
+    .alien { width: min(100%, 190px); filter: drop-shadow(0 14px 12px rgba(0,0,0,.25)); }
+    .alien .mouth, .alien .brow { display: none; }
+    .alien[data-mood="neutral"] .mouth-neutral,
+    .alien[data-mood="hurt"] .mouth-hurt,
+    .alien[data-mood="victory"] .mouth-victory,
+    .alien[data-mood="defeat"] .mouth-defeat { display: block; }
+    .alien[data-mood="hurt"] .brow-hurt,
+    .alien[data-mood="victory"] .brow-victory,
+    .alien[data-mood="defeat"] .brow-defeat { display: block; }
+    .alien[data-mood="hurt"] { transform: rotate(-3deg); }
+    .alien[data-mood="victory"] { transform: translateY(-5px) rotate(2deg); }
+    .alien[data-mood="defeat"] { transform: translateY(8px) rotate(-5deg); opacity: .9; }
+
+    .move-card h3 { margin: 0 0 4px; color: var(--orange-light); font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; }
+    .alien-move { margin: 0; color: var(--cream); font-size: clamp(1.9rem, 5vw, 3rem); font-weight: 1000; line-height: 1; }
+    .exchange-label { margin-top: 9px; color: var(--muted); font-size: .86rem; }
+
+    .health-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0; }
+    .health-card { border-radius: 14px; background: rgba(255,255,255,.07); padding: 12px; }
+    .health-top { display: flex; justify-content: space-between; gap: 8px; font-weight: 900; }
+    .health-track { height: 10px; margin-top: 8px; overflow: hidden; border-radius: 999px; background: rgba(0,0,0,.3); }
+    .health-fill { height: 100%; border-radius: inherit; transition: width .2s ease; }
+    .health-player { background: var(--blue-bright); }
+    .health-alien { background: var(--orange); }
+
+    .feedback {
+      min-height: 58px;
+      margin: 15px 0;
+      border-left: 5px solid var(--orange);
+      border-radius: 9px;
+      background: rgba(255,255,255,.07);
+      padding: 12px 14px;
+      color: var(--cream);
+    }
+    .feedback.success { border-color: var(--success); }
+    .feedback.miss { border-color: var(--danger); }
+
+    .response-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+    .response-btn {
+      min-height: 76px;
+      border: 2px solid var(--blue-bright);
+      border-radius: 15px;
+      background: #0d347b;
+      color: var(--white);
+      cursor: pointer;
+      font-weight: 1000;
+    }
+    .response-btn:hover { border-color: var(--orange-light); background: #174b9f; }
+    .response-btn small { display: block; margin-top: 3px; color: var(--muted); font-weight: 700; }
+    .action-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 17px; }
+
+    .briefing {
+      display: grid;
+      place-items: center;
+      min-height: 500px;
+      text-align: center;
+    }
+    .briefing-inner { max-width: 490px; }
+    .briefing .alien { width: 180px; }
+    .briefing h2 { margin: 14px 0 7px; font-size: 2.2rem; }
+    .briefing p { margin: 0 auto; color: var(--muted); }
+
+    .result-banner {
+      margin: 24px 0;
+      border: 2px solid var(--orange);
+      border-radius: 20px;
+      background: rgba(255,132,38,.1);
+      padding: 22px;
+    }
+    .result-banner h3 { margin: 0 0 7px; font-size: 1.65rem; }
+    .result-banner p { margin: 0; color: var(--cream); }
+
+    dialog {
+      width: min(620px, calc(100% - 30px));
+      max-height: 88vh;
+      overflow: auto;
+      border: 2px solid var(--orange);
+      border-radius: 22px;
+      background: var(--navy);
+      color: var(--white);
+      box-shadow: var(--shadow);
+      padding: 0;
+    }
+    dialog::backdrop { background: rgba(2, 8, 24, .78); backdrop-filter: blur(5px); }
+    .dialog-inner { padding: 26px; }
+    .dialog-inner h2 { margin: 0; font-size: 2rem; }
+    .dialog-inner ol { padding-left: 1.25rem; }
+    .counter-table { width: 100%; border-collapse: collapse; margin: 18px 0; }
+    .counter-table th, .counter-table td { border-bottom: 1px solid var(--line); padding: 10px; text-align: left; }
+    .counter-table th { color: var(--orange-light); }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 820px) {
+      .intro, .game-layout { grid-template-columns: 1fr; }
+      .intro { min-height: 0; }
+      .intro-art { min-height: 330px; }
+      .battle-panel { min-height: 0; }
+    }
+
+    @media (max-width: 540px) {
+      .shell { width: min(100% - 18px, 1120px); padding-top: 14px; }
+      .site-header { align-items: flex-start; }
+      .brand-mark { width: 40px; height: 40px; }
+      .brand p { display: none; }
+      .brand h1 { font-size: 1.1rem; }
+      .header-actions .btn { min-height: 40px; padding: 8px 11px; font-size: .85rem; }
+      .intro-copy { padding: 28px 22px 34px; }
+      .intro h2 { font-size: clamp(2.6rem, 17vw, 4.2rem); }
+      .intro-art { min-height: 280px; }
+      .board-panel, .battle-panel { padding: 18px 14px; border-radius: 21px; }
+      .board { gap: 7px; padding: 7px; border-width: 3px; }
+      .cell { border-radius: 11px; }
+      .alien-stage { grid-template-columns: 125px 1fr; gap: 12px; padding: 12px; }
+      .alien-wrap { min-height: 140px; }
+      .health-grid { grid-template-columns: 1fr; }
+      .response-grid { grid-template-columns: 1fr; }
+      .response-btn { min-height: 58px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="site-header">
+      <div class="brand" aria-label="Alien Tic-Tac-Toe">
+        <div class="brand-mark" aria-hidden="true">XO</div>
+        <div><p>Battle for the board</p><h1>Alien Tic-Tac-Toe</h1></div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-quiet" id="helpButton" type="button" hidden>How to play</button>
+        <button class="btn btn-danger" id="restartButton" type="button" hidden>Restart game</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel intro" id="introScreen" aria-labelledby="introTitle">
+        <div class="intro-copy">
+          <p class="eyebrow">A solo board battle</p>
+          <h2 id="introTitle">Choose a square. <span>Battle for it.</span></h2>
+          <p class="lede">Every empty square starts a tiny alien showdown. Win the battle to place X. Lose and the aliens place O. Three in a row decides the board.</p>
+          <ul class="counter-list" aria-label="Battle counters">
+            <li><strong>Shield</strong> beats Laser</li>
+            <li><strong>Blast</strong> beats Shield</li>
+            <li><strong>Dodge</strong> beats Claw</li>
+          </ul>
+          <button class="btn btn-primary" id="startButton" type="button">Start game</button>
+        </div>
+        <div class="intro-art" aria-hidden="true">
+          <svg class="alien" data-mood="neutral" viewBox="0 0 220 240" role="img" aria-label="A friendly original orange alien">
+            <use href="#alienDrawing"></use>
+          </svg>
+        </div>
+      </section>
+
+      <section id="gameScreen" hidden aria-label="Alien Tic-Tac-Toe game">
+        <div class="game-layout">
+          <section class="panel board-panel" aria-labelledby="boardTitle">
+            <div class="section-top">
+              <div><p class="eyebrow">Mission board</p><h2 id="boardTitle">Claim three</h2></div>
+              <span class="status-pill" id="phaseLabel">Choose a cell</span>
+            </div>
+            <p class="board-status" id="boardStatus">Choose any empty square to begin a battle.</p>
+            <div class="board" id="board" role="grid" aria-label="Three by three game board"></div>
+            <p class="board-note">You are X. The aliens are O. One battle fills one square.</p>
+          </section>
+
+          <section class="panel battle-panel" aria-labelledby="battleRegionTitle">
+            <h2 class="sr-only" id="battleRegionTitle">Battle area</h2>
+            <div class="battle-content" id="battleContent"></div>
+          </section>
+        </div>
+        <p class="sr-only" id="announcer" aria-live="polite"></p>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="helpDialog" aria-labelledby="helpTitle">
+    <div class="dialog-inner">
+      <p class="eyebrow">Mission guide</p>
+      <h2 id="helpTitle">How to play</h2>
+      <ol>
+        <li>Choose one empty square. The board locks while you fight for it.</li>
+        <li>Counter the alien move. A correct response hurts the alien; another response hurts you.</li>
+        <li>Win the battle for X. Lose it for O. There is no extra alien board turn.</li>
+        <li>Make an X line before the aliens make an O line.</li>
+      </ol>
+      <table class="counter-table">
+        <thead><tr><th>Alien move</th><th>Your counter</th></tr></thead>
+        <tbody><tr><td>Laser</td><td>Shield</td></tr><tr><td>Shield</td><td>Blast</td></tr><tr><td>Claw</td><td>Dodge</td></tr></tbody>
+      </table>
+      <p>Use Tab to reach a button, then Enter or Space to activate it. Restart clears the whole board and any battle in progress.</p>
+      <div class="action-row">
+        <button class="btn btn-primary" id="closeHelpButton" type="button">Return to game</button>
+        <button class="btn btn-danger" id="helpRestartButton" type="button">Restart game</button>
+      </div>
+    </div>
+  </dialog>
+
+  <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+    <symbol id="alienDrawing" viewBox="0 0 220 240">
+      <path d="M72 53 52 24" stroke="#0b255c" stroke-width="10" stroke-linecap="round"/>
+      <circle cx="48" cy="19" r="14" fill="#4fa5ff" stroke="#0b255c" stroke-width="7"/>
+      <path d="M148 53 168 24" stroke="#0b255c" stroke-width="10" stroke-linecap="round"/>
+      <circle cx="172" cy="19" r="14" fill="#4fa5ff" stroke="#0b255c" stroke-width="7"/>
+      <path d="M110 40c-52 0-84 34-84 83 0 40 22 69 57 78l-6 22 33-16 33 16-6-22c35-9 57-38 57-78 0-49-32-83-84-83Z" fill="#ff9a3e" stroke="#0b255c" stroke-width="9" stroke-linejoin="round"/>
+      <path d="M48 130c18 11 36 14 62 14s44-3 62-14" fill="none" stroke="#ffbd69" stroke-width="12" stroke-linecap="round" opacity=".75"/>
+      <ellipse cx="76" cy="105" rx="27" ry="34" fill="#fff7e9" stroke="#0b255c" stroke-width="7"/>
+      <ellipse cx="144" cy="105" rx="27" ry="34" fill="#fff7e9" stroke="#0b255c" stroke-width="7"/>
+      <circle cx="82" cy="111" r="10" fill="#071735"/>
+      <circle cx="138" cy="111" r="10" fill="#071735"/>
+      <circle cx="86" cy="106" r="3" fill="#fff"/>
+      <circle cx="142" cy="106" r="3" fill="#fff"/>
+      <path class="brow brow-hurt" d="m52 79 42 12m74-12-42 12" fill="none" stroke="#0b255c" stroke-width="8" stroke-linecap="round"/>
+      <path class="brow brow-victory" d="m51 85 40-13m78 13-40-13" fill="none" stroke="#0b255c" stroke-width="8" stroke-linecap="round"/>
+      <path class="brow brow-defeat" d="m52 78 40 15m76-15-40 15" fill="none" stroke="#0b255c" stroke-width="8" stroke-linecap="round"/>
+      <path class="mouth mouth-neutral" d="M86 166q24 18 48 0" fill="none" stroke="#0b255c" stroke-width="8" stroke-linecap="round"/>
+      <path class="mouth mouth-hurt" d="M87 179q23-18 46 0" fill="none" stroke="#0b255c" stroke-width="8" stroke-linecap="round"/>
+      <path class="mouth mouth-victory" d="M80 160q30 38 60 0Z" fill="#fff7e9" stroke="#0b255c" stroke-width="8" stroke-linejoin="round"/>
+      <path class="mouth mouth-defeat" d="M82 177q28-25 56 0" fill="none" stroke="#0b255c" stroke-width="8" stroke-linecap="round"/>
+      <circle cx="45" cy="162" r="8" fill="#ffbd69" opacity=".8"/>
+      <circle cx="175" cy="162" r="8" fill="#ffbd69" opacity=".8"/>
+    </symbol>
+  </svg>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const MOVES = ["Laser", "Shield", "Claw"];
+      const COUNTERS = { Laser: "Shield", Shield: "Blast", Claw: "Dodge" };
+      const LINES = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+      ];
+
+      const state = {
+        board: Array(9).fill(null),
+        phase: "instructions",
+        pending: null,
+        playerHealth: 2,
+        alienHealth: 2,
+        exchange: 0,
+        feedback: "",
+        feedbackKind: "",
+        battleResult: null,
+        winner: null,
+        winningLine: [],
+        mood: "neutral"
+      };
+
+      const introScreen = document.querySelector("#introScreen");
+      const gameScreen = document.querySelector("#gameScreen");
+      const boardElement = document.querySelector("#board");
+      const boardStatus = document.querySelector("#boardStatus");
+      const phaseLabel = document.querySelector("#phaseLabel");
+      const battleContent = document.querySelector("#battleContent");
+      const announcer = document.querySelector("#announcer");
+      const helpButton = document.querySelector("#helpButton");
+      const restartButton = document.querySelector("#restartButton");
+      const helpDialog = document.querySelector("#helpDialog");
+
+      function alienMarkup(mood = state.mood) {
+        return `<svg class="alien" data-mood="${mood}" viewBox="0 0 220 240" role="img" aria-label="Original orange alien with a ${mood} expression"><use href="#alienDrawing"></use></svg>`;
+      }
+
+      function resetState() {
+        state.board = Array(9).fill(null);
+        state.phase = "board";
+        state.pending = null;
+        state.playerHealth = 2;
+        state.alienHealth = 2;
+        state.exchange = 0;
+        state.feedback = "";
+        state.feedbackKind = "";
+        state.battleResult = null;
+        state.winner = null;
+        state.winningLine = [];
+        state.mood = "neutral";
+      }
+
+      function startGame() {
+        resetState();
+        introScreen.hidden = true;
+        gameScreen.hidden = false;
+        helpButton.hidden = false;
+        restartButton.hidden = false;
+        render(".cell:not(:disabled)");
+        announce("Game started. Choose an empty square.");
+      }
+
+      function restartGame() {
+        resetState();
+        render(".cell:not(:disabled)");
+        announce("Game restarted. The board and battle are clear.");
+      }
+
+      function chooseCell(index) {
+        if (state.phase !== "board" || state.board[index] !== null) return;
+        state.pending = index;
+        state.playerHealth = 2;
+        state.alienHealth = 2;
+        state.exchange = 0;
+        state.feedback = "";
+        state.feedbackKind = "";
+        state.battleResult = null;
+        state.mood = "neutral";
+        state.phase = "response";
+        render(".response-btn");
+        announce(`Battle for Cell ${index + 1}. Alien uses Laser.`);
+      }
+
+      function chooseResponse(response) {
+        if (state.phase !== "response") return;
+        const alienMove = MOVES[state.exchange];
+        const correct = COUNTERS[alienMove];
+        if (response === correct) {
+          state.alienHealth -= 1;
+          state.feedback = `${response} counters ${alienMove}. The alien loses 1 health.`;
+          state.feedbackKind = "success";
+          state.mood = state.alienHealth === 0 ? "defeat" : "hurt";
+        } else {
+          state.playerHealth -= 1;
+          state.feedback = `${response} does not counter ${alienMove}. You lose 1 health.`;
+          state.feedbackKind = "miss";
+          state.mood = state.playerHealth === 0 ? "victory" : "neutral";
+        }
+
+        if (state.alienHealth === 0) {
+          resolveBattle(true);
+          return;
+        }
+        if (state.playerHealth === 0) {
+          resolveBattle(false);
+          return;
+        }
+
+        state.phase = "feedback";
+        render("#nextExchangeButton");
+        announce(state.feedback);
+      }
+
+      function nextExchange() {
+        if (state.phase !== "feedback") return;
+        state.exchange += 1;
+        state.phase = "response";
+        state.feedback = "";
+        state.feedbackKind = "";
+        state.mood = "neutral";
+        render(".response-btn");
+        announce(`Exchange ${state.exchange + 1}. Alien uses ${MOVES[state.exchange]}.`);
+      }
+
+      function evaluateBoard() {
+        for (const line of LINES) {
+          const [a, b, c] = line;
+          if (state.board[a] && state.board[a] === state.board[b] && state.board[a] === state.board[c]) {
+            return { winner: state.board[a], line };
+          }
+        }
+        if (state.board.every(Boolean)) return { winner: "draw", line: [] };
+        return { winner: null, line: [] };
+      }
+
+      function resolveBattle(playerWon) {
+        if (state.phase !== "response" || state.pending === null || state.board[state.pending] !== null) return;
+        const cellNumber = state.pending + 1;
+        const mark = playerWon ? "X" : "O";
+        state.board[state.pending] = mark;
+        state.battleResult = mark;
+        const boardResult = evaluateBoard();
+        state.winner = boardResult.winner;
+        state.winningLine = boardResult.line;
+
+        if (state.winner) {
+          state.phase = "gameOver";
+          if (state.winner === "X") state.mood = "defeat";
+          if (state.winner === "O") state.mood = "victory";
+          if (state.winner === "draw") state.mood = "neutral";
+          render("#playAgainButton");
+          announce(resultText());
+        } else {
+          state.phase = "battleSummary";
+          state.mood = playerWon ? "defeat" : "victory";
+          render("#returnBoardButton");
+          announce(playerWon ? `Battle won. X placed in Cell ${cellNumber}.` : `Battle lost. O placed in Cell ${cellNumber}.`);
+        }
+      }
+
+      function returnToBoard() {
+        if (state.phase !== "battleSummary") return;
+        state.pending = null;
+        state.battleResult = null;
+        state.phase = "board";
+        state.feedback = "";
+        state.feedbackKind = "";
+        state.mood = "neutral";
+        render(".cell:not(:disabled)");
+        announce("Choose another empty square.");
+      }
+
+      function resultText() {
+        if (state.winner === "X") return `You won the board! X completed Cells ${state.winningLine.map(i => i + 1).join(", ")}.`;
+        if (state.winner === "O") return `The aliens won the board. O completed Cells ${state.winningLine.map(i => i + 1).join(", ")}.`;
+        return "Stellar draw! Every cell is filled and neither side made a line.";
+      }
+
+      function renderBoard() {
+        boardElement.innerHTML = "";
+        const canChoose = state.phase === "board";
+        state.board.forEach((mark, index) => {
+          const button = document.createElement("button");
+          const row = Math.floor(index / 3) + 1;
+          const column = (index % 3) + 1;
+          button.type = "button";
+          button.className = `cell ${mark ? `mark-${mark.toLowerCase()}` : "empty"}`;
+          button.dataset.cell = String(index);
+          button.setAttribute("role", "gridcell");
+          button.textContent = mark || "";
+          button.disabled = !canChoose || mark !== null;
+          button.setAttribute("aria-label", `Row ${row}, column ${column}, ${mark ? `marked ${mark}` : state.pending === index ? "battle pending" : "empty"}`);
+          if (state.pending === index && state.phase !== "board") button.classList.add("pending");
+          if (state.winningLine.includes(index)) button.classList.add("winning");
+          button.addEventListener("click", () => chooseCell(index));
+          boardElement.append(button);
+        });
+
+        const labels = {
+          board: ["Choose a cell", "Choose any empty square to begin a battle."],
+          response: ["Battle active", `The board is locked. You are fighting for Cell ${state.pending + 1}.`],
+          feedback: ["Exchange result", `Cell ${state.pending + 1} remains pending until the battle ends.`],
+          battleSummary: ["Square awarded", `Cell ${state.pending + 1} now belongs to ${state.battleResult}.`],
+          gameOver: ["Board complete", resultText()]
+        };
+        const [phase, status] = labels[state.phase] || labels.board;
+        phaseLabel.textContent = phase;
+        boardStatus.textContent = status;
+      }
+
+      function healthMarkup() {
+        return `<div class="health-grid" aria-label="Battle health">
+          <div class="health-card"><div class="health-top"><span>You</span><span>${state.playerHealth} of 2</span></div><div class="health-track"><div class="health-fill health-player" style="width:${state.playerHealth * 50}%"></div></div></div>
+          <div class="health-card"><div class="health-top"><span>Alien</span><span>${state.alienHealth} of 2</span></div><div class="health-track"><div class="health-fill health-alien" style="width:${state.alienHealth * 50}%"></div></div></div>
+        </div>`;
+      }
+
+      function battleShell(inner, move = MOVES[state.exchange]) {
+        return `<div class="battle-copy"><p class="eyebrow">Battle for Cell ${state.pending + 1}</p><h2>Counter the alien</h2><p>One response causes one point of damage.</p></div>
+          <div class="alien-stage"><div class="alien-wrap">${alienMarkup()}</div><div class="move-card"><h3>Alien move</h3><p class="alien-move">${move}</p><p class="exchange-label">Exchange ${state.exchange + 1} of 3 maximum</p></div></div>
+          ${healthMarkup()}${inner}`;
+      }
+
+      function renderBattle() {
+        if (state.phase === "board") {
+          battleContent.innerHTML = `<div class="briefing"><div class="briefing-inner">${alienMarkup("neutral")}<p class="eyebrow">Captain Orbo is ready</p><h2>Choose your battleground</h2><p>Select an empty square. The board will lock while you battle for it.</p></div></div>`;
+          return;
+        }
+
+        if (state.phase === "response") {
+          battleContent.innerHTML = battleShell(`<div class="response-grid" aria-label="Choose a battle response">
+            <button class="response-btn" type="button" data-response="Shield">Shield<small>blocks Laser</small></button>
+            <button class="response-btn" type="button" data-response="Blast">Blast<small>breaks Shield</small></button>
+            <button class="response-btn" type="button" data-response="Dodge">Dodge<small>escapes Claw</small></button>
+          </div>`);
+          battleContent.querySelectorAll("[data-response]").forEach(button => button.addEventListener("click", () => chooseResponse(button.dataset.response)));
+          return;
+        }
+
+        if (state.phase === "feedback") {
+          battleContent.innerHTML = battleShell(`<div class="feedback ${state.feedbackKind}" role="status">${state.feedback}</div><div class="action-row"><button class="btn btn-primary" id="nextExchangeButton" type="button">Next exchange</button></div>`);
+          document.querySelector("#nextExchangeButton").addEventListener("click", nextExchange);
+          return;
+        }
+
+        if (state.phase === "battleSummary") {
+          const won = state.battleResult === "X";
+          const title = won ? "Battle won!" : "Battle lost";
+          const copy = won ? `Cell ${state.pending + 1} is yours. X has been placed.` : `The aliens claimed Cell ${state.pending + 1} with O.`;
+          battleContent.innerHTML = `<div class="briefing"><div class="briefing-inner">${alienMarkup()}<p class="eyebrow">Square resolved</p><h2>${title}</h2><div class="result-banner"><p>${copy}</p></div><button class="btn btn-primary" id="returnBoardButton" type="button">Return to board</button></div></div>`;
+          document.querySelector("#returnBoardButton").addEventListener("click", returnToBoard);
+          return;
+        }
+
+        if (state.phase === "gameOver") {
+          const title = state.winner === "X" ? "You won!" : state.winner === "O" ? "The aliens won" : "Stellar draw";
+          battleContent.innerHTML = `<div class="briefing"><div class="briefing-inner">${alienMarkup()}<p class="eyebrow">Board complete</p><h2>${title}</h2><div class="result-banner"><p>${resultText()}</p></div><button class="btn btn-primary" id="playAgainButton" type="button">Play again</button></div></div>`;
+          document.querySelector("#playAgainButton").addEventListener("click", restartGame);
+        }
+      }
+
+      function render(focusSelector) {
+        renderBoard();
+        renderBattle();
+        if (focusSelector) requestAnimationFrame(() => document.querySelector(focusSelector)?.focus());
+      }
+
+      function announce(message) {
+        announcer.textContent = "";
+        requestAnimationFrame(() => { announcer.textContent = message; });
+      }
+
+      document.querySelector("#startButton").addEventListener("click", startGame);
+      restartButton.addEventListener("click", restartGame);
+      helpButton.addEventListener("click", () => helpDialog.showModal());
+      document.querySelector("#closeHelpButton").addEventListener("click", () => helpDialog.close());
+      document.querySelector("#helpRestartButton").addEventListener("click", () => { helpDialog.close(); restartGame(); });
+      helpDialog.addEventListener("close", () => helpButton.focus());
+
+      renderBoard();
+    })();
+  </script>
+</body>
+</html>
