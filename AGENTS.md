@@ -7,10 +7,10 @@
 - Owner and coordinator: Learner; name not recorded
 - Purpose and intended user: A short solo space-themed strategy game for casual players
 - Working folder: `/workspace/my-first-game`
-- GitHub repository: Local repository prepared; remote URL not connected
+- GitHub repository: `https://github.com/ivareem/my-first-game`, branch `main`
 - Vercel project: Not created
 - Brief and rules files: `game-brief.md` and `game-rules.md`
-- Current saved version or checkpoint: Local playable checkpoint 03
+- Current saved version or checkpoint: GitHub source checkpoint 04
 - Current stage and next approved outcome: Local build checked; next outcome is an independent human playtest
 
 ## Working agreement

@@ -5,8 +5,8 @@
 | Project name and type | Alien Tic-Tac-Toe browser game |
 | Owner and intended audience | Learner; casual keyboard, pointer, and touchscreen players |
 | Local folder or workspace | `/workspace/my-first-game` |
-| GitHub repository and branch | Local `main` branch prepared; learner-owned GitHub repository URL still needed |
-| Version | Local playable checkpoint 03 |
+| GitHub repository and branch | `https://github.com/ivareem/my-first-game`, branch `main` |
+| Version | GitHub source checkpoint 04 |
 | Last updated | October 19, 2026 |
 | Chatbot and route | Codex connected workspace |
 | Current lesson and skill | Alien Tic-Tac-Toe walkthrough; rules, build, look and feel, feedback, and playtest |
@@ -62,5 +62,5 @@ Completion check: Record where the player hesitates and whether they understand 
 
 Who owns the next edit: Learner or playtest partner records observations; Codex can make a focused repair afterward.
 
-Permissions already given: Local game creation, testing, and GitHub check-in. No Vercel deployment or other publication authorized.
+Permissions already given: Local game creation, testing, and GitHub check-in completed. No Vercel deployment or other publication authorized.
 
